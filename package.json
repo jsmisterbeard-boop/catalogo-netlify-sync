@@ -1,0 +1,9 @@
+{
+  "name": "catalogo-netlify-sync",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.4",
+    "jsdom": "^24.1.3"
+  }
+}
