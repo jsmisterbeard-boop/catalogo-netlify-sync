@@ -349,11 +349,24 @@
                   <h3>Métricas de acesso</h3>
                   <p>Visível somente para o administrador logado.</p>
                 </div>
-                <button class="btn btn-secondary" id="refreshAdminMetrics" type="button">Atualizar métricas</button>
+                <div class="admin-metrics-actions">
+                  <button class="btn btn-secondary" id="refreshAdminMetrics" type="button">Atualizar métricas</button>
+                  <button class="btn btn-secondary danger-soft" id="resetAdminMetrics" type="button">Reiniciar métricas</button>
+                </div>
               </div>
               <div class="admin-metrics-grid">
                 <article class="stat-card glass-card">
-                  <small>Total de acessos</small>
+                  <small>Visitas ao site</small>
+                  <strong id="adminMetricSiteVisits">0</strong>
+                  <p>Total de visitas registradas no site.</p>
+                </article>
+                <article class="stat-card glass-card">
+                  <small>Horário com mais visitas</small>
+                  <strong id="adminMetricTopVisitHour">Sem dados</strong>
+                  <p id="adminMetricTopVisitHourDetail">Nenhuma visita registrada ainda.</p>
+                </article>
+                <article class="stat-card glass-card">
+                  <small>Total de acessos a produtos</small>
                   <strong id="adminMetricTotalAccesses">0</strong>
                   <p>Total de aberturas da janela dos produtos.</p>
                 </article>
@@ -363,7 +376,7 @@
                   <p id="adminMetricTopProductDetail">Nenhum acesso registrado ainda.</p>
                 </article>
                 <article class="stat-card glass-card">
-                  <small>Horário mais acessado</small>
+                  <small>Horário com mais acessos</small>
                   <strong id="adminMetricTopHour">Sem dados</strong>
                   <p id="adminMetricTopHourDetail">Nenhum acesso registrado ainda.</p>
                 </article>

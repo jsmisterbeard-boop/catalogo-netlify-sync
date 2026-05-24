@@ -58,6 +58,8 @@ function buildDefaultData() {
 
 function buildDefaultAccessMetrics() {
   return {
+    siteVisits: 0,
+    siteVisitHours: {},
     totalAccesses: 0,
     products: {},
     hours: {},
@@ -69,6 +71,8 @@ function normalizeAccessMetrics(metrics = {}) {
   return {
     ...buildDefaultAccessMetrics(),
     ...metrics,
+    siteVisits: Number(metrics?.siteVisits || 0),
+    siteVisitHours: metrics?.siteVisitHours && typeof metrics.siteVisitHours === 'object' ? metrics.siteVisitHours : {},
     totalAccesses: Number(metrics?.totalAccesses || 0),
     products: metrics?.products && typeof metrics.products === 'object' ? metrics.products : {},
     hours: metrics?.hours && typeof metrics.hours === 'object' ? metrics.hours : {},
@@ -233,6 +237,18 @@ export default async function handler(req) {
     });
   }
 
+  if (action === 'trackVisit') {
+    const metrics = await getAccessMetrics(store);
+    const occurredAt = String(body.occurredAt || new Date().toISOString()).trim();
+    const hourKey = String(body.hourKey || '00').padStart(2, '0').slice(0, 2);
+    const nextMetrics = normalizeAccessMetrics(metrics);
+    nextMetrics.siteVisits = Number(nextMetrics.siteVisits || 0) + 1;
+    nextMetrics.siteVisitHours[hourKey] = Number(nextMetrics.siteVisitHours[hourKey] || 0) + 1;
+    nextMetrics.updatedAt = occurredAt;
+    await store.setJSON(ACCESS_KEY, nextMetrics);
+    return jsonResponse({ ok: true, metrics: nextMetrics });
+  }
+
   if (action === 'trackAccess') {
     const metrics = await getAccessMetrics(store);
     const product = body.product || {};
@@ -303,6 +319,12 @@ export default async function handler(req) {
 
   if (action === 'getMetrics') {
     const metrics = await getAccessMetrics(store);
+    return jsonResponse({ ok: true, metrics });
+  }
+
+  if (action === 'resetMetrics') {
+    const metrics = buildDefaultAccessMetrics();
+    await store.setJSON(ACCESS_KEY, metrics);
     return jsonResponse({ ok: true, metrics });
   }
 
