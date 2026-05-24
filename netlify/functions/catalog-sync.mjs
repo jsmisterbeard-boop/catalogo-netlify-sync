@@ -2,13 +2,14 @@ import { getStore } from '@netlify/blobs';
 
 const STORE_NAME = 'catalogo-sync-store';
 const DATA_KEY = 'site-data';
+const ACCESS_KEY = 'access-metrics';
 const AUTH_KEY = 'admin-auth';
 const RECOVERY_KEY = 'admin-recovery';
 const DEFAULT_RECOVERY_PHONE = '5514991299311';
 const RECOVERY_TTL_MS = 10 * 60 * 1000;
 const RECOVERY_COOLDOWN_MS = 60 * 1000;
 
-const DEFAULT_PUBLIC_CONFIG = {"brandName": "Radar de Preços", "topbarText": "Catálogo de Preços • Abril 2026", "heroEyebrow": "Sua loja", "heroTitleMain": "Radar de Preços", "heroTitleHighlight": "", "heroText": "Preços atualizados em tempo real dos melhores fornecedores.", "radarTabLabel": "Radar de Preços", "badges": [], "heroCardLabel": "Condições de pagamento", "heroCardTitle": "Tudo sob encomenda • Pagamento seguro", "heroCardText": "💚 PIX à vista • 💳 Cartão em até 12x • 🤝 Atendimento personalizado", "footerNote": "⚠️ Todos os produtos são vendidos sob encomenda. Preços sujeitos a alteração sem aviso prévio.", "statProductsLabel": "Itens publicados no catálogo", "statAdminTitle": "Painel interno", "statAdminText": "Edite textos, cores, preços, login e conteúdo", "statExportTitle": "Excel + backup", "statExportText": "Baixe tabela de preços e cópia completa do site", "productCornerText": "", "whatsappNumber": "5514991299311", "whatsappMessage": "Olá! Vim pelo catálogo e gostaria de mais informações.", "bg": "#f6f3ee", "bgSoft": "#fbfaf8", "surfaceStrong": "#ffffff", "primary": "#c9ab7c", "accent": "#d9e8df", "text": "#222832", "muted": "#8e8a82", "card": "#ffffff", "cardBackground": "#ffffff", "cardBorderColor": "#ece4d8", "cardTextColor": "#222832", "noticeColor": "#b4863c", "pageBackground": "", "customCss": ""};
+const DEFAULT_PUBLIC_CONFIG = {"brandName": "Radar de Preços", "topbarText": "Catálogo de Preços • Abril 2026", "heroEyebrow": "Sua loja", "heroTitleMain": "Radar de Preços", "heroTitleHighlight": "", "heroText": "Preços atualizados em tempo real dos melhores fornecedores.", "radarTabLabel": "Radar de Preços", "badges": [], "heroCardLabel": "Condições de pagamento", "heroCardTitle": "Tudo sob encomenda • Pagamento seguro", "heroCardText": "💚 PIX à vista • 💳 Cartão em até 12x • 🤝 Atendimento personalizado", "footerNote": "⚠️ Todos os produtos são vendidos sob encomenda. Preços sujeitos a alteração sem aviso prévio.", "statProductsLabel": "Itens publicados no catálogo", "statAdminTitle": "Painel interno", "statAdminText": "Edite textos, cores, preços, login e conteúdo", "statExportTitle": "Excel + backup", "statExportText": "Baixe tabela de preços e cópia completa do site", "productCornerText": "", "whatsappNumber": "5514991299311", "whatsappMessage": "Olá! Vim pelo catálogo e gostaria de mais informações.", "bg": "#f6f3ee", "bgSoft": "#fbfaf8", "surfaceStrong": "#ffffff", "primary": "#c9ab7c", "accent": "#d9e8df", "text": "#222832", "muted": "#8e8a82", "card": "#ffffff", "cardBackground": "#ffffff", "cardBorderColor": "#ece4d8", "cardTextColor": "#222832", "noticeColor": "#b4863c", "pageBackground": "", "customCss": "", "showMetrics": true, "metricProductsLabel": "Itens publicados no catálogo", "metricCategoriesLabel": "Categorias ativas", "metricPriceRangeLabel": "Faixa de preço", "metricAvgPriceLabel": "Ticket médio"};
 const DEFAULT_PRODUCTS = [{"id": "iphone-16e-128-gb", "name": "iPhone 16e 128 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "128 GB", "installment": "12x R$ 371", "pixPrice": "R$ 3.900", "pixValue": 3900, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-128-gb", "name": "iPhone 16 128 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "128 GB", "installment": "12x R$ 461", "pixPrice": "R$ 4.850", "pixValue": 4850, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-256-gb", "name": "iPhone 16 256 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "256 GB", "installment": "12x R$ 503", "pixPrice": "R$ 5.290", "pixValue": 5290, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-plus-128-gb", "name": "iPhone 16 Plus 128 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "128 GB", "installment": "12x R$ 494", "pixPrice": "R$ 5.190", "pixValue": 5190, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-plus-256-gb", "name": "iPhone 16 Plus 256 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "256 GB", "installment": "12x R$ 532", "pixPrice": "R$ 5.590", "pixValue": 5590, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-pro-128-gb", "name": "iPhone 16 Pro 128 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "128 GB", "installment": "12x R$ 561", "pixPrice": "R$ 5.900", "pixValue": 5900, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-pro-256-gb", "name": "iPhone 16 Pro 256 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "256 GB", "installment": "12x R$ 589", "pixPrice": "R$ 6.190", "pixValue": 6190, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-pro-512-gb", "name": "iPhone 16 Pro 512 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "512 GB", "installment": "12x R$ 646", "pixPrice": "R$ 6.790", "pixValue": 6790, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-pro-max-256-gb", "name": "iPhone 16 Pro Max 256 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "256 GB", "installment": "12x R$ 656", "pixPrice": "R$ 6.890", "pixValue": 6890, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "iphone-16-pro-max-512-gb", "name": "iPhone 16 Pro Max 512 GB", "category": "iPhone", "section": "iPhone — Linha 16", "emoji": "📱", "storage": "512 GB", "installment": "12x R$ 713", "pixPrice": "R$ 7.490", "pixValue": 7490, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "macbook-air-m3-256-gb", "name": "MacBook Air M3 256 GB", "category": "Mac", "section": "MacBook", "emoji": "💻", "storage": "256 GB", "installment": "12x R$ 1.050", "pixPrice": "R$ 11.000", "pixValue": 11000, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "macbook-air-m3-512-gb", "name": "MacBook Air M3 512 GB", "category": "Mac", "section": "MacBook", "emoji": "💻", "storage": "512 GB", "installment": "12x R$ 1.190", "pixPrice": "R$ 12.490", "pixValue": 12490, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "ipad-10-64-gb", "name": "iPad 10 64 GB", "category": "iPad", "section": "iPad", "emoji": "🖥️", "storage": "64 GB", "installment": "12x R$ 385", "pixPrice": "R$ 3.990", "pixValue": 3990, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "ipad-10-256-gb", "name": "iPad 10 256 GB", "category": "iPad", "section": "iPad", "emoji": "🖥️", "storage": "256 GB", "installment": "12x R$ 466", "pixPrice": "R$ 4.890", "pixValue": 4890, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "airpods-4", "name": "AirPods 4", "category": "AirPods", "section": "AirPods", "emoji": "🎧", "storage": "", "installment": "12x R$ 142", "pixPrice": "R$ 1.490", "pixValue": 1490, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}, {"id": "airpods-pro-2", "name": "AirPods Pro 2", "category": "AirPods", "section": "AirPods", "emoji": "🎧", "storage": "", "installment": "12x R$ 204", "pixPrice": "R$ 2.140", "pixValue": 2140, "tags": ["Nota Fiscal", "Lacrado", "1 ano Apple"], "notes": "Produto novo, vendido sob encomenda."}];
 const DEFAULT_ADMIN = {
   user: 'admin',
@@ -53,6 +54,34 @@ function buildDefaultData() {
     products: DEFAULT_PRODUCTS,
     updatedAt: new Date().toISOString(),
   };
+}
+
+function buildDefaultAccessMetrics() {
+  return {
+    totalAccesses: 0,
+    products: {},
+    hours: {},
+    updatedAt: '',
+  };
+}
+
+function normalizeAccessMetrics(metrics = {}) {
+  return {
+    ...buildDefaultAccessMetrics(),
+    ...metrics,
+    totalAccesses: Number(metrics?.totalAccesses || 0),
+    products: metrics?.products && typeof metrics.products === 'object' ? metrics.products : {},
+    hours: metrics?.hours && typeof metrics.hours === 'object' ? metrics.hours : {},
+    updatedAt: String(metrics?.updatedAt || ''),
+  };
+}
+
+async function getAccessMetrics(store) {
+  const existingMetrics = await store.get(ACCESS_KEY, { type: 'json', consistency: 'strong' });
+  if (existingMetrics) return normalizeAccessMetrics(existingMetrics);
+  const initialMetrics = buildDefaultAccessMetrics();
+  await store.setJSON(ACCESS_KEY, initialMetrics);
+  return initialMetrics;
 }
 
 async function getStoreData() {
@@ -204,6 +233,40 @@ export default async function handler(req) {
     });
   }
 
+  if (action === 'trackAccess') {
+    const metrics = await getAccessMetrics(store);
+    const product = body.product || {};
+    const productId = String(product.id || '').trim();
+    const productName = String(product.name || '').trim() || 'Produto';
+    const occurredAt = String(body.occurredAt || new Date().toISOString()).trim();
+    const hourKey = String(body.hourKey || '00').padStart(2, '0').slice(0, 2);
+
+    if (!productId) {
+      return jsonResponse({ message: 'Produto inválido para registrar acesso.' }, 400);
+    }
+
+    const nextMetrics = normalizeAccessMetrics(metrics);
+    const currentProduct = nextMetrics.products[productId] || {
+      id: productId,
+      name: productName,
+      count: 0,
+      lastAccessAt: '',
+    };
+
+    nextMetrics.products[productId] = {
+      ...currentProduct,
+      name: productName,
+      count: Number(currentProduct.count || 0) + 1,
+      lastAccessAt: occurredAt,
+    };
+    nextMetrics.hours[hourKey] = Number(nextMetrics.hours[hourKey] || 0) + 1;
+    nextMetrics.totalAccesses = Number(nextMetrics.totalAccesses || 0) + 1;
+    nextMetrics.updatedAt = occurredAt;
+
+    await store.setJSON(ACCESS_KEY, nextMetrics);
+    return jsonResponse({ ok: true, metrics: nextMetrics });
+  }
+
   if (action === 'confirmPasswordRecovery') {
     const recovery = await store.get(RECOVERY_KEY, { type: 'json', consistency: 'strong' });
     const code = String(body.code || '').trim();
@@ -236,6 +299,11 @@ export default async function handler(req) {
   const authorized = await isAuthorized(store, credentials);
   if (!authorized) {
     return jsonResponse({ message: 'Sessão inválida. Faça login novamente.' }, 401);
+  }
+
+  if (action === 'getMetrics') {
+    const metrics = await getAccessMetrics(store);
+    return jsonResponse({ ok: true, metrics });
   }
 
   if (action === 'save') {

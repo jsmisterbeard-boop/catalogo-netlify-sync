@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'catalogo_site_editavel_v4';
+const ACCESS_METRICS_KEY = 'catalogo_access_metrics_v1';
 const API_URL = '/.netlify/functions/catalog-sync';
 const DEFAULT_ADMIN = {
   user: 'admin',
@@ -52,6 +53,11 @@ const DEFAULT_CONFIG = {
   dialogPriceColor: '#c9ab7c',
   pageBackground: '',
   customCss: '',
+  showMetrics: true,
+  metricProductsLabel: 'Itens publicados no catálogo',
+  metricCategoriesLabel: 'Categorias ativas',
+  metricPriceRangeLabel: 'Faixa de preço',
+  metricAvgPriceLabel: 'Ticket médio',
 };
 
 const state = {
@@ -69,6 +75,7 @@ const state = {
   adminCredentials: { user: '', password: '' },
   syncEnabled: false,
   lastOpenedProduct: null,
+  adminMetrics: null,
 };
 
 const els = {
@@ -139,6 +146,13 @@ const els = {
   layoutStatus: document.getElementById('layoutStatus'),
   securityStatus: document.getElementById('securityStatus'),
   customCssHook: document.getElementById('customCssHook'),
+  refreshAdminMetrics: document.getElementById('refreshAdminMetrics'),
+  adminMetricTotalAccesses: document.getElementById('adminMetricTotalAccesses'),
+  adminMetricTopProduct: document.getElementById('adminMetricTopProduct'),
+  adminMetricTopProductDetail: document.getElementById('adminMetricTopProductDetail'),
+  adminMetricTopHour: document.getElementById('adminMetricTopHour'),
+  adminMetricTopHourDetail: document.getElementById('adminMetricTopHourDetail'),
+  adminMetricsUpdatedAt: document.getElementById('adminMetricsUpdatedAt'),
 };
 
 const formEls = {
@@ -294,6 +308,195 @@ function readPersistedData() {
   } catch {
     return null;
   }
+}
+
+function buildEmptyAccessMetrics() {
+  return {
+    totalAccesses: 0,
+    products: {},
+    hours: {},
+    updatedAt: '',
+  };
+}
+
+function readLocalAccessMetrics() {
+  try {
+    const raw = localStorage.getItem(ACCESS_METRICS_KEY);
+    if (!raw) return buildEmptyAccessMetrics();
+    const parsed = JSON.parse(raw);
+    return {
+      ...buildEmptyAccessMetrics(),
+      ...parsed,
+      products: parsed?.products && typeof parsed.products === 'object' ? parsed.products : {},
+      hours: parsed?.hours && typeof parsed.hours === 'object' ? parsed.hours : {},
+    };
+  } catch {
+    return buildEmptyAccessMetrics();
+  }
+}
+
+function persistAccessMetrics(metrics) {
+  try {
+    localStorage.setItem(ACCESS_METRICS_KEY, JSON.stringify(metrics));
+  } catch {}
+}
+
+function nextAccessMetrics(metrics = buildEmptyAccessMetrics(), product = {}, occurredAt = new Date().toISOString(), hourKey = '00') {
+  const next = {
+    ...buildEmptyAccessMetrics(),
+    ...metrics,
+    products: { ...(metrics?.products || {}) },
+    hours: { ...(metrics?.hours || {}) },
+  };
+
+  const productId = normalizeText(product.id);
+  if (productId) {
+    const currentProduct = next.products[productId] || {
+      id: productId,
+      name: normalizeText(product.name) || 'Produto',
+      count: 0,
+      lastAccessAt: '',
+    };
+    next.products[productId] = {
+      ...currentProduct,
+      name: normalizeText(product.name) || currentProduct.name || 'Produto',
+      count: Number(currentProduct.count || 0) + 1,
+      lastAccessAt: occurredAt,
+    };
+  }
+
+  const safeHourKey = String(hourKey || '00').padStart(2, '0').slice(0, 2);
+  next.hours[safeHourKey] = Number(next.hours[safeHourKey] || 0) + 1;
+  next.totalAccesses = Number(next.totalAccesses || 0) + 1;
+  next.updatedAt = occurredAt;
+  return next;
+}
+
+function formatHourLabel(hourKey = '00') {
+  const hour = String(hourKey || '00').padStart(2, '0').slice(0, 2);
+  return `${hour}:00`;
+}
+
+function getTopProductMetric(metrics = buildEmptyAccessMetrics()) {
+  const entries = Object.values(metrics.products || {});
+  if (!entries.length) return null;
+  return entries.sort((a, b) => Number(b.count || 0) - Number(a.count || 0))[0];
+}
+
+function getTopHourMetric(metrics = buildEmptyAccessMetrics()) {
+  const entries = Object.entries(metrics.hours || {});
+  if (!entries.length) return null;
+  const [hour, count] = entries.sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))[0];
+  return { hour, count: Number(count || 0) };
+}
+
+function renderAdminMetrics(metrics = state.adminMetrics || readLocalAccessMetrics()) {
+  const safeMetrics = {
+    ...buildEmptyAccessMetrics(),
+    ...metrics,
+    products: metrics?.products || {},
+    hours: metrics?.hours || {},
+  };
+  const topProduct = getTopProductMetric(safeMetrics);
+  const topHour = getTopHourMetric(safeMetrics);
+
+  if (els.adminMetricTotalAccesses) {
+    els.adminMetricTotalAccesses.textContent = String(Number(safeMetrics.totalAccesses || 0));
+  }
+
+  if (els.adminMetricTopProduct) {
+    els.adminMetricTopProduct.textContent = topProduct?.name || 'Sem dados';
+  }
+
+  if (els.adminMetricTopProductDetail) {
+    els.adminMetricTopProductDetail.textContent = topProduct
+      ? `${Number(topProduct.count || 0)} acessos registrados`
+      : 'Nenhum acesso registrado ainda.';
+  }
+
+  if (els.adminMetricTopHour) {
+    els.adminMetricTopHour.textContent = topHour ? formatHourLabel(topHour.hour) : 'Sem dados';
+  }
+
+  if (els.adminMetricTopHourDetail) {
+    els.adminMetricTopHourDetail.textContent = topHour
+      ? `${Number(topHour.count || 0)} acessos nesse horário`
+      : 'Nenhum acesso registrado ainda.';
+  }
+
+  if (els.adminMetricsUpdatedAt) {
+    els.adminMetricsUpdatedAt.textContent = safeMetrics.updatedAt
+      ? `Última atualização: ${new Date(safeMetrics.updatedAt).toLocaleString('pt-BR')}`
+      : 'Ainda não há acessos suficientes para exibir métricas.';
+  }
+}
+
+async function loadAdminMetrics() {
+  if (!hasAdminCredentials()) {
+    state.adminMetrics = buildEmptyAccessMetrics();
+    renderAdminMetrics(state.adminMetrics);
+    return;
+  }
+
+  try {
+    const response = await callCatalogApi('getMetrics', {
+      credentials: state.adminCredentials,
+    });
+    state.adminMetrics = {
+      ...buildEmptyAccessMetrics(),
+      ...(response?.metrics || {}),
+      products: response?.metrics?.products || {},
+      hours: response?.metrics?.hours || {},
+    };
+    persistAccessMetrics(state.adminMetrics);
+  } catch {
+    state.adminMetrics = readLocalAccessMetrics();
+  }
+
+  renderAdminMetrics(state.adminMetrics);
+}
+
+async function trackProductAccess(product) {
+  const productId = normalizeText(product?.id);
+  if (!productId) return;
+
+  const now = new Date();
+  const occurredAt = now.toISOString();
+  const hourKey = String(now.getHours()).padStart(2, '0');
+
+  const localMetrics = nextAccessMetrics(readLocalAccessMetrics(), {
+    id: productId,
+    name: normalizeText(product?.name) || 'Produto',
+  }, occurredAt, hourKey);
+
+  persistAccessMetrics(localMetrics);
+
+  if (state.adminLogged) {
+    state.adminMetrics = localMetrics;
+    renderAdminMetrics(state.adminMetrics);
+  }
+
+  try {
+    const response = await callCatalogApi('trackAccess', {
+      product: {
+        id: productId,
+        name: normalizeText(product?.name) || 'Produto',
+      },
+      occurredAt,
+      hourKey,
+    });
+
+    if (response?.metrics) {
+      state.adminMetrics = {
+        ...buildEmptyAccessMetrics(),
+        ...response.metrics,
+        products: response.metrics.products || {},
+        hours: response.metrics.hours || {},
+      };
+      persistAccessMetrics(state.adminMetrics);
+      if (state.adminLogged) renderAdminMetrics(state.adminMetrics);
+    }
+  } catch {}
 }
 
 function hasAdminCredentials() {
@@ -749,6 +952,7 @@ function renderProducts() {
 
 function openDialog(product) {
   state.lastOpenedProduct = product || null;
+  void trackProductAccess(product);
   els.dialogContent.innerHTML = `
     <div class="dialog-head">
       <div class="dialog-emoji">${product.emoji || '📦'}</div>
@@ -812,10 +1016,16 @@ function setAdminLogged(logged) {
   els.adminPanelSection.classList.toggle('hidden', !logged);
   els.loginStatus.textContent = '';
   toggleRecoveryPanel(false);
-  if (!logged) {
-    els.loginPassword.value = '';
-    setAdminCredentials('', '');
+
+  if (logged) {
+    loadAdminMetrics();
+    return;
   }
+
+  state.adminMetrics = buildEmptyAccessMetrics();
+  renderAdminMetrics(state.adminMetrics);
+  els.loginPassword.value = '';
+  setAdminCredentials('', '');
 }
 
 function renderAdminProducts() {
@@ -1350,6 +1560,10 @@ function registerEvents() {
   els.logoutAdmin.addEventListener('click', () => {
     setAdminLogged(false);
     setStatusMessage(els.loginStatus, 'Sessão encerrada.', false, 1200);
+  });
+
+  els.refreshAdminMetrics?.addEventListener('click', () => {
+    loadAdminMetrics();
   });
 
   [

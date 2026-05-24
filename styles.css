@@ -1531,3 +1531,18 @@ body {
 .dialog-price {
   color: var(--dialog-price-color) !important;
 }
+
+
+
+.admin-metrics-card { margin-bottom: 16px; }
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.metrics-updated-at {
+  margin-top: 12px;
+}
+@media (max-width: 860px) {
+  .admin-metrics-grid { grid-template-columns: 1fr; }
+}

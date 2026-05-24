@@ -49,7 +49,6 @@
         </div>
       </section>
 
-
       <section class="toolbar container" id="catalogo">
         <div class="search-box glass-card">
           <label class="sr-only" for="searchInput">Buscar produto</label>
@@ -111,8 +110,7 @@
         <section class="admin-login" id="adminLoginSection">
           <div class="admin-card glass-card">
             <h3>Entrar como administrador</h3>
-            <p>Use o login configurado no próprio painel. Padrão inicial: <strong>admin</strong> / <strong>admin123</strong>.</p>
-            <form id="loginForm" class="stack-form">
+                        <form id="loginForm" class="stack-form">
               <label>
                 Usuário
                 <input id="loginUser" class="glass-input admin-input" type="text" autocomplete="username" required />
@@ -345,6 +343,34 @@
           </div>
 
           <div class="admin-tab-content" id="tab-products">
+            <div class="admin-card glass-card admin-metrics-card">
+              <div class="section-head">
+                <div>
+                  <h3>Métricas de acesso</h3>
+                  <p>Visível somente para o administrador logado.</p>
+                </div>
+                <button class="btn btn-secondary" id="refreshAdminMetrics" type="button">Atualizar métricas</button>
+              </div>
+              <div class="admin-metrics-grid">
+                <article class="stat-card glass-card">
+                  <small>Total de acessos</small>
+                  <strong id="adminMetricTotalAccesses">0</strong>
+                  <p>Total de aberturas da janela dos produtos.</p>
+                </article>
+                <article class="stat-card glass-card">
+                  <small>Produto mais acessado</small>
+                  <strong id="adminMetricTopProduct">Sem dados</strong>
+                  <p id="adminMetricTopProductDetail">Nenhum acesso registrado ainda.</p>
+                </article>
+                <article class="stat-card glass-card">
+                  <small>Horário mais acessado</small>
+                  <strong id="adminMetricTopHour">Sem dados</strong>
+                  <p id="adminMetricTopHourDetail">Nenhum acesso registrado ainda.</p>
+                </article>
+              </div>
+              <p class="admin-status metrics-updated-at" id="adminMetricsUpdatedAt"></p>
+            </div>
+
             <div class="admin-grid">
               <div class="admin-card glass-card">
                 <div class="section-head">
