@@ -1,9 +1,20 @@
 {
-  "name": "catalogo-netlify-sync",
+  "name": "admin-metricas-pro",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "lint:check": "node --check netlify/functions/api.mjs && node --check src/main.js && node --check src/lib/api.js && node --check src/lib/auth.js && node --check src/lib/search.js && node --check src/lib/image.js && node --check src/lib/dom.js && node --check src/ui/catalog.js && node --check src/ui/admin.js && node --check src/ui/dashboard.js && node --check src/ui/audit.js",
+    "dev": "netlify dev",
+    "build": "echo 'Static app ready'",
+    "start": "netlify dev"
+  },
   "dependencies": {
-    "@netlify/blobs": "^10.7.4",
-    "jsdom": "^24.1.3"
+    "@supabase/supabase-js": "^2.53.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^18.1.0"
   }
 }
