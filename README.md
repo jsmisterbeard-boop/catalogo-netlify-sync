@@ -1,42 +1,38 @@
-# Admin Métricas Pro
+# Admin Métricas Completo
 
-Refatoração completa do catálogo digital com painel administrativo, backend serverless, autenticação JWT, RBAC, auditoria, dashboard e PWA.
+Projeto completo e funcional para publicação no Netlify, com persistência em **Netlify Blobs**, autenticação segura no backend e painel administrativo completo.
 
-## Principais melhorias implementadas
+## Funcionalidades
 - Login via backend com JWT
 - Senhas com bcrypt
 - Perfis: `admin`, `editor`, `viewer`
-- Persistência em Supabase
-- Tabelas: `users`, `products`, `metrics`, `audit_logs`
+- Persistência de usuários, produtos, métricas e auditoria em Netlify Blobs
+- Dashboard com gráfico de visualizações e conversão
+- Busca sem acentos e fuzzy
+- Paginação
+- Upload drag and drop com conversão WEBP
 - Auditoria de login, CRUD e uploads
-- Dashboard com Chart.js
-- Busca sem acentos + fuzzy search
-- Paginação e lazy loading
-- Upload por drag and drop com conversão para WEBP
-- SEO básico: Open Graph, sitemap e robots
 - Tema escuro persistido
-- PWA com cache offline
-- Frontend modular sem uso inseguro de `innerHTML` para conteúdo dinâmico
+- PWA + cache offline
+- SEO básico (Open Graph, sitemap, robots)
+- Código modular em `src/`
+
+## Credenciais iniciais
+- E-mail: `admin@empresa.com`
+- Senha: `TroqueAgora123!`
+
+Altere imediatamente após o primeiro acesso.
+
+## Deploy
+1. Suba esta pasta em um repositório Git
+2. Conecte no Netlify
+3. Configure `JWT_SECRET`
+4. Faça o deploy
+5. Acesse o painel e altere a senha do admin criando um novo usuário, se desejar
 
 ## Estrutura
-- `index.html`: shell da aplicação
-- `src/`: frontend modular
-- `netlify/functions/api.mjs`: API backend
-- `supabase/schema.sql`: schema completo
-- `supabase/seed.sql`: seed inicial com produtos e admin
-- `DEPLOY_GUIDE.md`: guia de publicação
-- `PRODUCTION_CHECKLIST.md`: checklist final
-
-## Variáveis de ambiente
-Copie `.env.example` para `.env` e preencha as credenciais do seu projeto.
-
-## Publicação rápida
-1. Crie o projeto no Supabase
-2. Rode `supabase/schema.sql`
-3. Rode `supabase/seed.sql`
-4. Configure as variáveis do Netlify
-5. Faça deploy do repositório
-
-## Observações
-- O alvo de Lighthouse > 90 foi tratado com otimizações de cache, lazy loading, paginação e PWA, mas deve ser validado no ambiente final.
-- O campo de imagem usa Supabase Storage (`SUPABASE_STORAGE_BUCKET`).
+- `index.html`
+- `src/`
+- `netlify/functions/api.mjs`
+- `DEPLOY_GUIDE.md`
+- `PRODUCTION_CHECKLIST.md`

@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="description" content="Catálogo digital profissional com painel administrativo, auditoria e dashboard de métricas." />
-    <meta property="og:title" content="Admin Métricas Pro" />
+    <meta property="og:title" content="Admin Métricas Completo" />
     <meta property="og:description" content="Catálogo com autenticação segura, métricas, auditoria e PWA." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://seu-dominio.com/" />
     <meta property="og:image" content="https://seu-dominio.com/public/icons/Icon-512.png" />
-    <title>Admin Métricas Pro</title>
+    <title>Admin Métricas Completo</title>
     <link rel="icon" href="/public/favicon.png" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="stylesheet" href="/src/styles/main.css" />
@@ -22,7 +22,7 @@
       <div class="container topbar-inner">
         <div>
           <p class="eyebrow">Catálogo digital seguro</p>
-          <h1>Admin Métricas Pro</h1>
+          <h1>Admin Métricas Completo</h1>
         </div>
         <div class="topbar-actions">
           <button id="themeToggle" class="btn btn-ghost" type="button">Tema</button>
@@ -35,9 +35,9 @@
       <section class="hero card">
         <div>
           <span class="pill">PWA + SEO + Auditoria</span>
-          <h2>Catálogo profissional pronto para produção</h2>
+          <h2>Site completo pronto para publicar</h2>
           <p>
-            Busca sem acento, autenticação via backend, upload WEBP, métricas de visualização e cliques em WhatsApp.
+            Busca sem acento, autenticação no backend, upload WEBP, métricas de visualização e cliques em WhatsApp.
           </p>
         </div>
         <a id="heroWhatsapp" class="btn btn-primary" href="#catalogo">Ver catálogo</a>
@@ -94,8 +94,8 @@
               <strong id="statConversion">0%</strong>
             </div>
           </div>
-          <canvas id="viewsChart" height="220"></canvas>
-          <canvas id="conversionChart" height="220"></canvas>
+          <div style="height:220px"><canvas id="viewsChart"></canvas></div>
+          <div style="height:220px"><canvas id="conversionChart"></canvas></div>
         </article>
 
         <article class="card stack-md">
@@ -175,7 +175,39 @@
         </section>
 
         <section class="tab-panel" data-panel="users">
-          <div id="usersPanel" class="stack-md"></div>
+          <div class="admin-columns">
+            <div class="card subtle">
+              <h3>Novo / editar usuário</h3>
+              <form id="userForm" class="form-grid">
+                <input id="userId" type="hidden" />
+                <div class="field"><label for="userName">Nome</label><input id="userName" required /></div>
+                <div class="field"><label for="userEmail">E-mail</label><input id="userEmail" type="email" required /></div>
+                <div class="field"><label for="userRole">Perfil</label>
+                  <select id="userRole">
+                    <option value="admin">Administrador</option>
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Consulta</option>
+                  </select>
+                </div>
+                <div class="field"><label for="userStatus">Status</label>
+                  <select id="userStatus">
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                  </select>
+                </div>
+                <div class="field full"><label for="userPassword">Senha</label><input id="userPassword" type="password" placeholder="Obrigatória ao criar, opcional ao editar" /></div>
+                <div class="toolbar-actions full">
+                  <button class="btn btn-primary" type="submit">Salvar usuário</button>
+                  <button id="resetUserForm" class="btn btn-ghost" type="button">Limpar</button>
+                </div>
+                <p id="userFeedback" class="muted full"></p>
+              </form>
+            </div>
+            <div class="card subtle">
+              <h3>Usuários do sistema</h3>
+              <div id="usersPanel" class="stack-md"></div>
+            </div>
+          </div>
         </section>
       </section>
     </main>
