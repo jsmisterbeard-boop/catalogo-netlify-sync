@@ -4,12 +4,6 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  external_node_modules = ["@netlify/blobs", "bcryptjs", "jsonwebtoken"]
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api?path=:splat"
-  status = 200
 
 [[headers]]
   for = "/sw.js"
@@ -17,11 +11,6 @@
     Cache-Control = "no-cache, no-store, must-revalidate"
 
 [[headers]]
-  for = "/src/styles/main.css"
+  for = "/index.html"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/src/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "no-cache, must-revalidate"

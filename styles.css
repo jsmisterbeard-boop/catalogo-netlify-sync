@@ -1546,28 +1546,3 @@ body {
 @media (max-width: 860px) {
   .admin-metrics-grid { grid-template-columns: 1fr; }
 }
-
-.admin-metrics-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.danger-soft {
-  border-color: rgba(180, 35, 24, 0.18);
-  color: #8f2d24;
-  background: rgba(255, 235, 232, 0.8);
-}
-.danger-soft:hover {
-  background: rgba(255, 226, 221, 0.95);
-}
-.admin-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-}
-@media (max-width: 1180px) {
-  .admin-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 680px) {
-  .admin-metrics-grid { grid-template-columns: 1fr; }
-}

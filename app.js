@@ -1,6 +1,5 @@
 const STORAGE_KEY = 'catalogo_site_editavel_v4';
 const ACCESS_METRICS_KEY = 'catalogo_access_metrics_v1';
-const SITE_VISIT_SESSION_KEY = 'catalogo_site_visit_tracked_v1';
 const API_URL = '/.netlify/functions/catalog-sync';
 const DEFAULT_ADMIN = {
   user: 'admin',
@@ -148,10 +147,6 @@ const els = {
   securityStatus: document.getElementById('securityStatus'),
   customCssHook: document.getElementById('customCssHook'),
   refreshAdminMetrics: document.getElementById('refreshAdminMetrics'),
-  resetAdminMetrics: document.getElementById('resetAdminMetrics'),
-  adminMetricSiteVisits: document.getElementById('adminMetricSiteVisits'),
-  adminMetricTopVisitHour: document.getElementById('adminMetricTopVisitHour'),
-  adminMetricTopVisitHourDetail: document.getElementById('adminMetricTopVisitHourDetail'),
   adminMetricTotalAccesses: document.getElementById('adminMetricTotalAccesses'),
   adminMetricTopProduct: document.getElementById('adminMetricTopProduct'),
   adminMetricTopProductDetail: document.getElementById('adminMetricTopProductDetail'),
@@ -317,8 +312,6 @@ function readPersistedData() {
 
 function buildEmptyAccessMetrics() {
   return {
-    siteVisits: 0,
-    siteVisitHours: {},
     totalAccesses: 0,
     products: {},
     hours: {},
@@ -334,8 +327,6 @@ function readLocalAccessMetrics() {
     return {
       ...buildEmptyAccessMetrics(),
       ...parsed,
-      siteVisits: Number(parsed?.siteVisits || 0),
-      siteVisitHours: parsed?.siteVisitHours && typeof parsed.siteVisitHours === 'object' ? parsed.siteVisitHours : {},
       products: parsed?.products && typeof parsed.products === 'object' ? parsed.products : {},
       hours: parsed?.hours && typeof parsed.hours === 'object' ? parsed.hours : {},
     };
@@ -354,7 +345,6 @@ function nextAccessMetrics(metrics = buildEmptyAccessMetrics(), product = {}, oc
   const next = {
     ...buildEmptyAccessMetrics(),
     ...metrics,
-    siteVisitHours: { ...(metrics?.siteVisitHours || {}) },
     products: { ...(metrics?.products || {}) },
     hours: { ...(metrics?.hours || {}) },
   };
@@ -400,38 +390,15 @@ function getTopHourMetric(metrics = buildEmptyAccessMetrics()) {
   return { hour, count: Number(count || 0) };
 }
 
-function getTopSiteVisitHourMetric(metrics = buildEmptyAccessMetrics()) {
-  const entries = Object.entries(metrics.siteVisitHours || {});
-  if (!entries.length) return null;
-  const [hour, count] = entries.sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))[0];
-  return { hour, count: Number(count || 0) };
-}
-
 function renderAdminMetrics(metrics = state.adminMetrics || readLocalAccessMetrics()) {
   const safeMetrics = {
     ...buildEmptyAccessMetrics(),
     ...metrics,
-    siteVisitHours: metrics?.siteVisitHours || {},
     products: metrics?.products || {},
     hours: metrics?.hours || {},
   };
   const topProduct = getTopProductMetric(safeMetrics);
   const topHour = getTopHourMetric(safeMetrics);
-  const topVisitHour = getTopSiteVisitHourMetric(safeMetrics);
-
-  if (els.adminMetricSiteVisits) {
-    els.adminMetricSiteVisits.textContent = String(Number(safeMetrics.siteVisits || 0));
-  }
-
-  if (els.adminMetricTopVisitHour) {
-    els.adminMetricTopVisitHour.textContent = topVisitHour ? formatHourLabel(topVisitHour.hour) : 'Sem dados';
-  }
-
-  if (els.adminMetricTopVisitHourDetail) {
-    els.adminMetricTopVisitHourDetail.textContent = topVisitHour
-      ? `${Number(topVisitHour.count || 0)} visitas nesse horário`
-      : 'Nenhuma visita registrada ainda.';
-  }
 
   if (els.adminMetricTotalAccesses) {
     els.adminMetricTotalAccesses.textContent = String(Number(safeMetrics.totalAccesses || 0));
@@ -460,81 +427,7 @@ function renderAdminMetrics(metrics = state.adminMetrics || readLocalAccessMetri
   if (els.adminMetricsUpdatedAt) {
     els.adminMetricsUpdatedAt.textContent = safeMetrics.updatedAt
       ? `Última atualização: ${new Date(safeMetrics.updatedAt).toLocaleString('pt-BR')}`
-      : 'Ainda não há métricas registradas.';
-  }
-}
-
-async function trackSiteVisitOnce() {
-  try {
-    if (sessionStorage.getItem(SITE_VISIT_SESSION_KEY) === '1') return;
-  } catch {}
-
-  const now = new Date();
-  const occurredAt = now.toISOString();
-  const hourKey = String(now.getHours()).padStart(2, '0');
-  const baseMetrics = readLocalAccessMetrics();
-  const localMetrics = {
-    ...buildEmptyAccessMetrics(),
-    ...baseMetrics,
-    siteVisitHours: { ...(baseMetrics.siteVisitHours || {}) },
-    products: { ...(baseMetrics.products || {}) },
-    hours: { ...(baseMetrics.hours || {}) },
-  };
-  localMetrics.siteVisits = Number(localMetrics.siteVisits || 0) + 1;
-  localMetrics.siteVisitHours[hourKey] = Number(localMetrics.siteVisitHours[hourKey] || 0) + 1;
-  localMetrics.updatedAt = occurredAt;
-  persistAccessMetrics(localMetrics);
-
-  try { sessionStorage.setItem(SITE_VISIT_SESSION_KEY, '1'); } catch {}
-
-  if (state.adminLogged) {
-    state.adminMetrics = localMetrics;
-    renderAdminMetrics(state.adminMetrics);
-  }
-
-  try {
-    const response = await callCatalogApi('trackVisit', { occurredAt, hourKey });
-    if (response?.metrics) {
-      state.adminMetrics = {
-        ...buildEmptyAccessMetrics(),
-        ...response.metrics,
-        siteVisitHours: response.metrics.siteVisitHours || {},
-        products: response.metrics.products || {},
-        hours: response.metrics.hours || {},
-      };
-      persistAccessMetrics(state.adminMetrics);
-      if (state.adminLogged) renderAdminMetrics(state.adminMetrics);
-    }
-  } catch {}
-}
-
-async function resetAdminMetrics() {
-  if (!hasAdminCredentials()) {
-    setStatusMessage(els.adminMetricsUpdatedAt, 'Faça login no admin para reiniciar as métricas.', true, 2800);
-    return;
-  }
-
-  const confirmed = window.confirm('Deseja realmente reiniciar todas as métricas de visitas e acessos?');
-  if (!confirmed) return;
-
-  try {
-    const response = await callCatalogApi('resetMetrics', {
-      credentials: state.adminCredentials,
-    });
-    state.adminMetrics = {
-      ...buildEmptyAccessMetrics(),
-      ...(response?.metrics || {}),
-      siteVisitHours: response?.metrics?.siteVisitHours || {},
-      products: response?.metrics?.products || {},
-      hours: response?.metrics?.hours || {},
-    };
-    persistAccessMetrics(state.adminMetrics);
-    try { sessionStorage.removeItem(SITE_VISIT_SESSION_KEY); } catch {}
-    renderAdminMetrics(state.adminMetrics);
-    setStatusMessage(els.adminMetricsUpdatedAt, 'Métricas reiniciadas com sucesso.', false, 2200);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Não foi possível reiniciar as métricas.';
-    setStatusMessage(els.adminMetricsUpdatedAt, message, true, 3200);
+      : 'Ainda não há acessos suficientes para exibir métricas.';
   }
 }
 
@@ -552,7 +445,6 @@ async function loadAdminMetrics() {
     state.adminMetrics = {
       ...buildEmptyAccessMetrics(),
       ...(response?.metrics || {}),
-      siteVisitHours: response?.metrics?.siteVisitHours || {},
       products: response?.metrics?.products || {},
       hours: response?.metrics?.hours || {},
     };
@@ -572,12 +464,10 @@ async function trackProductAccess(product) {
   const occurredAt = now.toISOString();
   const hourKey = String(now.getHours()).padStart(2, '0');
 
-  const baseMetrics = readLocalAccessMetrics();
-  const localMetrics = nextAccessMetrics(baseMetrics, {
+  const localMetrics = nextAccessMetrics(readLocalAccessMetrics(), {
     id: productId,
     name: normalizeText(product?.name) || 'Produto',
   }, occurredAt, hourKey);
-  localMetrics.siteVisitHours = { ...(baseMetrics.siteVisitHours || {}) };
 
   persistAccessMetrics(localMetrics);
 
@@ -600,7 +490,6 @@ async function trackProductAccess(product) {
       state.adminMetrics = {
         ...buildEmptyAccessMetrics(),
         ...response.metrics,
-        siteVisitHours: response.metrics.siteVisitHours || {},
         products: response.metrics.products || {},
         hours: response.metrics.hours || {},
       };
@@ -1676,7 +1565,6 @@ function registerEvents() {
   els.refreshAdminMetrics?.addEventListener('click', () => {
     loadAdminMetrics();
   });
-  els.resetAdminMetrics?.addEventListener('click', resetAdminMetrics);
 
   [
     formEls.brandName,
@@ -1748,7 +1636,6 @@ async function init() {
   clearProductForm();
   setAdminLogged(false);
   registerEvents();
-  void trackSiteVisitOnce();
 }
 
 if ('serviceWorker' in navigator) {

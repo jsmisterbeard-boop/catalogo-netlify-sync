@@ -3,231 +3,466 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f172a" />
-    <meta name="description" content="Catálogo digital profissional com painel administrativo, auditoria e dashboard de métricas." />
-    <meta property="og:title" content="Admin Métricas Completo" />
-    <meta property="og:description" content="Catálogo com autenticação segura, métricas, auditoria e PWA." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://seu-dominio.com/" />
-    <meta property="og:image" content="https://seu-dominio.com/public/icons/Icon-512.png" />
-    <title>Admin Métricas Completo</title>
-    <link rel="icon" href="/public/favicon.png" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="stylesheet" href="/src/styles/main.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
-    <script type="module" src="/src/main.js"></script>
+    <meta name="theme-color" content="#0b0b0c" />
+    <meta name="description" content="Catálogo digital responsivo com painel administrativo e edição total do layout." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Catálogo Digital" />
+    <title>Catálogo Digital Editável</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="preload" href="styles.css" as="style" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script defer src="app.js"></script>
   </head>
   <body>
+    <div class="admin-overlay hidden" id="adminOverlay"></div>
+
     <header class="topbar">
       <div class="container topbar-inner">
-        <div>
-          <p class="eyebrow">Catálogo digital seguro</p>
-          <h1>Admin Métricas Completo</h1>
+        <div class="brand-line">
+          <span class="brand-dot"></span>
+          <p id="topbarText">Radar premium • Comparativo editável • Mobile first</p>
         </div>
         <div class="topbar-actions">
-          <button id="themeToggle" class="btn btn-ghost" type="button">Tema</button>
-          <button id="loginToggle" class="btn btn-primary" type="button">Entrar</button>
+          <button class="btn btn-secondary btn-admin" id="shareButton" type="button">Compartilhar</button>
+          <button class="btn btn-secondary btn-admin" id="openAdminPanel" type="button">Admin</button>
         </div>
       </div>
     </header>
 
-    <main class="container layout">
-      <section class="hero card">
-        <div>
-          <span class="pill">PWA + SEO + Auditoria</span>
-          <h2>Site completo pronto para publicar</h2>
-          <p>
-            Busca sem acento, autenticação no backend, upload WEBP, métricas de visualização e cliques em WhatsApp.
+    <main>
+      <section class="hero container">
+        <div class="hero-copy">
+          <span class="eyebrow" id="heroEyebrow">Radar inteligente</span>
+          <h1><span id="heroTitleMain">Radar de Preços</span> <span id="heroTitleHighlight"></span></h1>
+          <p class="hero-text" id="heroText">
+            Preços atualizados em tempo real dos melhores fornecedores.
           </p>
+          <div class="hero-badges" id="heroBadges"></div>
+          <div class="hero-actions mobile-stack">
+            <button class="tab-switch is-active" id="radarTab" type="button">Radar de Preços</button>
+            <div class="btn btn-secondary toolbar-notice hidden" id="toolbarNotice"></div>
+          </div>
         </div>
-        <a id="heroWhatsapp" class="btn btn-primary" href="#catalogo">Ver catálogo</a>
       </section>
 
-      <section id="catalogo" class="card stack-lg">
-        <div class="toolbar">
-          <div class="field grow">
-            <label for="searchInput">Buscar produto</label>
-            <input id="searchInput" type="search" placeholder="Digite nome, categoria, modelo ou tag" />
-          </div>
-          <div class="field compact">
-            <label for="categorySelect">Categoria</label>
-            <select id="categorySelect">
-              <option value="">Todas</option>
+      <section class="toolbar container" id="catalogo">
+        <div class="search-box glass-card">
+          <label class="sr-only" for="searchInput">Buscar produto</label>
+          <input id="searchInput" type="search" placeholder="Buscar produto, modelo ou cor..." autocomplete="off" />
+        </div>
+        <div class="toolbar-actions">
+          <div class="toolbar-actions-row toolbar-filters">
+            <select id="categorySelect" class="glass-input" aria-label="Categoria">
+              <option value="Todos">Todos</option>
             </select>
+            <button class="btn btn-secondary icon-btn" id="resetFilters" type="button" aria-label="Limpar filtros">↻</button>
           </div>
-        </div>
-        <div class="toolbar secondary">
-          <p id="catalogStatus" class="muted">Carregando produtos...</p>
-          <div class="pagination-row">
-            <button id="prevPage" class="btn btn-ghost" type="button">Anterior</button>
-            <span id="pageIndicator" class="muted">Página 1</span>
-            <button id="nextPage" class="btn btn-ghost" type="button">Próxima</button>
-          </div>
-        </div>
-        <div id="productGrid" class="product-grid" aria-live="polite"></div>
-        <div id="emptyState" class="empty-state hidden">
-          <h3>Nenhum produto encontrado</h3>
-          <p>Tente ajustar os filtros ou cadastre novos itens no painel.</p>
         </div>
       </section>
 
-      <section class="grid-2">
-        <article class="card stack-md">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Dashboard</p>
-              <h2>Indicadores</h2>
-            </div>
-            <button id="refreshDashboard" class="btn btn-ghost hidden-auth" type="button">Atualizar</button>
-          </div>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span class="muted">Visualizações</span>
-              <strong id="statViews">0</strong>
-            </div>
-            <div class="stat-card">
-              <span class="muted">Cliques WhatsApp</span>
-              <strong id="statWhatsapp">0</strong>
-            </div>
-            <div class="stat-card">
-              <span class="muted">Conversão média</span>
-              <strong id="statConversion">0%</strong>
-            </div>
-          </div>
-          <div style="height:220px"><canvas id="viewsChart"></canvas></div>
-          <div style="height:220px"><canvas id="conversionChart"></canvas></div>
-        </article>
-
-        <article class="card stack-md">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Auditoria</p>
-              <h2>Últimos eventos</h2>
-            </div>
-            <button id="refreshAudit" class="btn btn-ghost hidden-auth" type="button">Atualizar</button>
-          </div>
-          <div id="auditList" class="audit-list"></div>
-        </article>
+      <section class="filters container">
+        <div class="chip-row" id="categoryChips" aria-label="Categorias"></div>
       </section>
 
-      <section id="adminPanel" class="card hidden-auth hidden">
-        <div class="section-header">
+      <section class="results container">
+        <div class="results-header">
           <div>
-            <p class="eyebrow">Painel administrativo</p>
-            <h2>Gerenciar catálogo</h2>
+            <p class="mini-label">Catálogo</p>
+            <h2 id="resultsTitle">Produtos disponíveis</h2>
           </div>
-          <div class="toolbar-actions">
-            <button id="exportJson" class="btn btn-ghost" type="button">Exportar JSON</button>
-            <button id="logoutButton" class="btn btn-danger" type="button">Sair</button>
-          </div>
+          <p class="results-count" id="resultsCount">Mostrando 0 de 0 produtos</p>
         </div>
-
-        <div class="tabs" role="tablist">
-          <button class="tab is-active" data-tab="products" type="button">Produtos</button>
-          <button class="tab" data-tab="dashboard" type="button">Dashboard</button>
-          <button class="tab" data-tab="audit" type="button">Auditoria</button>
-          <button class="tab" data-tab="users" type="button">Usuários</button>
+        <div id="productGrid" class="product-grid"></div>
+        <div id="emptyState" class="empty-state glass-card hidden">
+          <h3>Nenhum produto encontrado</h3>
+          <p>Tente ajustar a busca ou trocar a categoria selecionada.</p>
         </div>
+      </section>
 
-        <section class="tab-panel is-active" data-panel="products">
-          <div class="admin-columns">
-            <div class="card subtle">
-              <h3>Novo / editar produto</h3>
-              <form id="productForm" class="form-grid">
-                <input id="productId" type="hidden" />
-                <div class="field"><label for="productName">Nome</label><input id="productName" required /></div>
-                <div class="field"><label for="productCategory">Categoria</label><input id="productCategory" required /></div>
-                <div class="field"><label for="productSection">Seção</label><input id="productSection" /></div>
-                <div class="field"><label for="productStorage">Armazenamento</label><input id="productStorage" /></div>
-                <div class="field"><label for="productPrice">Preço PIX</label><input id="productPrice" type="number" min="0" step="0.01" required /></div>
-                <div class="field"><label for="productInstallment">Parcelamento</label><input id="productInstallment" /></div>
-                <div class="field full"><label for="productTags">Tags</label><input id="productTags" placeholder="Separe por vírgula" /></div>
-                <div class="field full"><label for="productNotes">Observações</label><textarea id="productNotes" rows="4"></textarea></div>
-                <div class="field full"><label for="productWhatsapp">WhatsApp do produto</label><input id="productWhatsapp" placeholder="5511999999999" /></div>
-                <div class="field full"><label for="productImageUrl">URL da imagem</label><input id="productImageUrl" placeholder="https://..." /></div>
-                <div class="field full">
-                  <label>Upload de imagem</label>
-                  <div id="dropzone" class="dropzone" tabindex="0">Arraste uma imagem ou clique para selecionar</div>
-                  <input id="productImageFile" type="file" accept="image/*" class="hidden" />
-                  <img id="imagePreview" class="image-preview hidden" alt="Pré-visualização da imagem" />
-                </div>
-                <div class="field checkbox-row"><label><input id="productFeatured" type="checkbox" /> Destaque</label></div>
-                <div class="toolbar-actions full">
-                  <button class="btn btn-primary" type="submit">Salvar produto</button>
-                  <button id="resetProductForm" class="btn btn-ghost" type="button">Limpar</button>
-                </div>
-                <p id="productFeedback" class="muted full"></p>
-              </form>
-            </div>
-            <div class="card subtle">
-              <h3>Produtos cadastrados</h3>
-              <div id="adminProducts" class="admin-products-list"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="tab-panel" data-panel="dashboard">
-          <p class="muted">Use esta aba para acompanhar os dados agregados do catálogo em tempo real.</p>
-        </section>
-
-        <section class="tab-panel" data-panel="audit">
-          <p class="muted">A lista de auditoria abaixo registra login, CRUD, upload e eventos críticos.</p>
-        </section>
-
-        <section class="tab-panel" data-panel="users">
-          <div class="admin-columns">
-            <div class="card subtle">
-              <h3>Novo / editar usuário</h3>
-              <form id="userForm" class="form-grid">
-                <input id="userId" type="hidden" />
-                <div class="field"><label for="userName">Nome</label><input id="userName" required /></div>
-                <div class="field"><label for="userEmail">E-mail</label><input id="userEmail" type="email" required /></div>
-                <div class="field"><label for="userRole">Perfil</label>
-                  <select id="userRole">
-                    <option value="admin">Administrador</option>
-                    <option value="editor">Editor</option>
-                    <option value="viewer">Consulta</option>
-                  </select>
-                </div>
-                <div class="field"><label for="userStatus">Status</label>
-                  <select id="userStatus">
-                    <option value="active">Ativo</option>
-                    <option value="inactive">Inativo</option>
-                  </select>
-                </div>
-                <div class="field full"><label for="userPassword">Senha</label><input id="userPassword" type="password" placeholder="Obrigatória ao criar, opcional ao editar" /></div>
-                <div class="toolbar-actions full">
-                  <button class="btn btn-primary" type="submit">Salvar usuário</button>
-                  <button id="resetUserForm" class="btn btn-ghost" type="button">Limpar</button>
-                </div>
-                <p id="userFeedback" class="muted full"></p>
-              </form>
-            </div>
-            <div class="card subtle">
-              <h3>Usuários do sistema</h3>
-              <div id="usersPanel" class="stack-md"></div>
-            </div>
-          </div>
-        </section>
+      <section class="footer-note container glass-card">
+        <p id="footerNote">⚠️ Todos os produtos são vendidos sob encomenda. Preços sujeitos a alteração sem aviso prévio.</p>
       </section>
     </main>
 
-    <dialog id="loginDialog" class="dialog">
-      <form id="loginForm" class="dialog-card" method="dialog">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Autenticação segura</p>
-            <h2>Acessar painel</h2>
-          </div>
-          <button id="closeLogin" class="btn btn-ghost" type="button">Fechar</button>
-        </div>
-        <div class="field"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" autocomplete="username" required /></div>
-        <div class="field"><label for="loginPassword">Senha</label><input id="loginPassword" type="password" autocomplete="current-password" required /></div>
-        <div class="toolbar-actions">
-          <button class="btn btn-primary" type="submit">Entrar</button>
-        </div>
-        <p id="loginFeedback" class="muted"></p>
-      </form>
+    <button class="floating-wa" id="floatingWhatsapp" type="button" aria-label="Falar no WhatsApp">WhatsApp</button>
+
+    <dialog id="productDialog" class="dialog">
+      <div class="dialog-shell">
+        <button class="dialog-close" id="closeDialog" type="button" aria-label="Fechar">×</button>
+        <div id="dialogContent"></div>
+      </div>
     </dialog>
+
+    <aside class="admin-drawer" id="adminDrawer" aria-hidden="true">
+      <div class="admin-header">
+        <div>
+          <p class="mini-label">Painel administrativo</p>
+          <h2>Editar site</h2>
+        </div>
+        <button class="dialog-close" id="closeAdminPanel" type="button" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="admin-body">
+        <section class="admin-login" id="adminLoginSection">
+          <div class="admin-card glass-card">
+            <h3>Entrar como administrador</h3>
+                        <form id="loginForm" class="stack-form">
+              <label>
+                Usuário
+                <input id="loginUser" class="glass-input admin-input" type="text" autocomplete="username" required />
+              </label>
+              <label>
+                Senha
+                <input id="loginPassword" class="glass-input admin-input" type="password" autocomplete="current-password" required />
+              </label>
+              <button class="btn btn-primary" type="submit">Entrar</button>
+              <div class="login-help-row">
+                <button class="btn-link-inline" id="forgotPasswordBtn" type="button">Esqueci a senha</button>
+              </div>
+              <div class="recovery-panel hidden" id="recoveryPanel">
+                <p class="admin-tip recovery-tip">Ao solicitar a recuperação, um código de validação será enviado para o WhatsApp do administrador cadastrado.</p>
+                <label>
+                  Código recebido no WhatsApp
+                  <input id="recoveryCode" class="glass-input admin-input" type="text" inputmode="numeric" maxlength="6" placeholder="Digite o código de 6 dígitos" />
+                </label>
+                <label>
+                  Novo usuário
+                  <input id="recoveryUser" class="glass-input admin-input" type="text" placeholder="admin" />
+                </label>
+                <label>
+                  Nova senha
+                  <input id="recoveryPassword" class="glass-input admin-input" type="password" placeholder="Digite a nova senha" />
+                </label>
+                <div class="recovery-actions">
+                  <button class="btn btn-secondary" id="cancelRecoveryBtn" type="button">Cancelar</button>
+                  <button class="btn btn-primary" id="confirmRecoveryBtn" type="button">Validar código e redefinir</button>
+                </div>
+              </div>
+              <p class="admin-status" id="loginStatus"></p>
+            </form>
+          </div>
+        </section>
+
+        <section class="admin-panel hidden" id="adminPanelSection">
+          <div class="admin-toolbar glass-card">
+            <div>
+              <h3>Painel ativo</h3>
+              <p>Altere layout, textos, produtos, login e exporte/importe planilhas e backups.</p>
+            </div>
+            <div class="admin-toolbar-actions">
+              <button class="btn btn-secondary" id="exportExcel" type="button">Exportar Excel</button>
+              <button class="btn btn-secondary" id="exportBackup" type="button">Backup JSON</button>
+              <label class="btn btn-secondary upload-btn" for="importBackupInput">Importar JSON/Excel</label>
+              <input id="importBackupInput" type="file" accept=".json,.xlsx,.xls,.csv,application/json,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+              <button class="btn btn-secondary" id="logoutAdmin" type="button">Sair</button>
+            </div>
+          </div>
+
+          <div class="admin-tabs">
+            <button class="admin-tab active" type="button" data-tab="tab-layout">Layout</button>
+            <button class="admin-tab" type="button" data-tab="tab-products">Produtos</button>
+            <button class="admin-tab" type="button" data-tab="tab-security">Segurança</button>
+          </div>
+
+          <div class="admin-tab-content active" id="tab-layout">
+            <div class="admin-grid">
+              <div class="admin-card glass-card">
+                <h3>Textos e identidade</h3>
+                <p class="admin-tip">Mantive apenas os campos que aparecem na interface atual do site.</p>
+                <form id="layoutForm" class="stack-form two-cols">
+                  <label>
+                    Nome da marca
+                    <input id="cfgBrandName" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Texto da borda superior
+                    <input id="cfgTopbarText" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Nome da loja acima do título
+                    <input id="cfgHeroEyebrow" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Título principal
+                    <input id="cfgHeroTitleMain" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Destaque do título
+                    <input id="cfgHeroTitleHighlight" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Texto principal
+                    <textarea id="cfgHeroText" class="glass-input admin-input area-input"></textarea>
+                  </label>
+                  <label>
+                    Texto da aba principal
+                    <input id="cfgRadarTabLabel" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Rodapé / aviso
+                    <textarea id="cfgFooterNote" class="glass-input admin-input area-input"></textarea>
+                  </label>
+                  <label>
+                    WhatsApp (somente números com DDI)
+                    <input id="cfgWhatsappNumber" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Mensagem padrão do WhatsApp
+                    <textarea id="cfgWhatsappMessage" class="glass-input admin-input area-input"></textarea>
+                  </label>
+                  <label class="full-span">
+                    Texto do aviso acima dos cards
+                    <input id="cfgProductCornerText" class="glass-input admin-input" type="text" placeholder="Pagamento 10% antecipado" />
+                  </label>
+                </form>
+              </div>
+
+              <div class="admin-card glass-card">
+                <h3>Cores e aparência</h3>
+                <form id="themeForm" class="stack-form two-cols">
+                  <label>
+                    Cor de fundo
+                    <input id="cfgBg" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Fundo suave
+                    <input id="cfgBgSoft" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Superfície
+                    <input id="cfgSurfaceStrong" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Cor principal
+                    <input id="cfgPrimary" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Cor de destaque
+                    <input id="cfgAccent" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Cor do texto
+                    <input id="cfgText" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Cor secundária
+                    <input id="cfgMuted" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Cor dos cards
+                    <input id="cfgCard" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Fundo dos cards
+                    <input id="cfgCardBackground" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Borda dos cards
+                    <input id="cfgCardBorderColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Texto dos cards
+                    <input id="cfgCardTextColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Cor do aviso de pagamento
+                    <input id="cfgNoticeColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Fundo do painel admin
+                    <input id="cfgPanelBgColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Fundo dos blocos do painel
+                    <input id="cfgPanelCardBgColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Títulos do painel
+                    <input id="cfgPanelTitleColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Texto do painel
+                    <input id="cfgPanelTextColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Labels do painel
+                    <input id="cfgPanelLabelColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Texto dos campos do painel
+                    <input id="cfgPanelInputTextColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Fundo dos campos do painel
+                    <input id="cfgPanelInputBgColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Borda dos campos do painel
+                    <input id="cfgPanelInputBorderColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Placeholder dos campos
+                    <input id="cfgPanelPlaceholderColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Fundo da janela do produto
+                    <input id="cfgDialogBgColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Texto da janela do produto
+                    <input id="cfgDialogTextColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Texto auxiliar da janela
+                    <input id="cfgDialogMutedColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label>
+                    Preço na janela do produto
+                    <input id="cfgDialogPriceColor" class="glass-input admin-input" type="color" />
+                  </label>
+                  <label class="full-span">
+                    Fundo da página (CSS opcional)
+                    <textarea id="cfgPageBackground" class="glass-input admin-input area-input code-area" placeholder="Ex.: linear-gradient(180deg, #f6efe5 0%, #fffdf9 100%)"></textarea>
+                  </label>
+                  <label class="full-span">
+                    CSS extra (opcional)
+                    <textarea id="cfgCustomCss" class="glass-input admin-input area-input code-area" placeholder="Ex.: .hero { background: linear-gradient(...); }"></textarea>
+                  </label>
+                </form>
+                <div class="admin-actions">
+                  <button class="btn btn-primary" id="saveLayout" type="button">Salvar layout</button>
+                  <button class="btn btn-secondary" id="resetLayout" type="button">Restaurar padrão</button>
+                </div>
+                <p class="admin-status" id="layoutStatus"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-tab-content" id="tab-products">
+            <div class="admin-card glass-card admin-metrics-card">
+              <div class="section-head">
+                <div>
+                  <h3>Métricas de acesso</h3>
+                  <p>Visível somente para o administrador logado.</p>
+                </div>
+                <button class="btn btn-secondary" id="refreshAdminMetrics" type="button">Atualizar métricas</button>
+              </div>
+              <div class="admin-metrics-grid">
+                <article class="stat-card glass-card">
+                  <small>Total de acessos</small>
+                  <strong id="adminMetricTotalAccesses">0</strong>
+                  <p>Total de aberturas da janela dos produtos.</p>
+                </article>
+                <article class="stat-card glass-card">
+                  <small>Produto mais acessado</small>
+                  <strong id="adminMetricTopProduct">Sem dados</strong>
+                  <p id="adminMetricTopProductDetail">Nenhum acesso registrado ainda.</p>
+                </article>
+                <article class="stat-card glass-card">
+                  <small>Horário mais acessado</small>
+                  <strong id="adminMetricTopHour">Sem dados</strong>
+                  <p id="adminMetricTopHourDetail">Nenhum acesso registrado ainda.</p>
+                </article>
+              </div>
+              <p class="admin-status metrics-updated-at" id="adminMetricsUpdatedAt"></p>
+            </div>
+
+            <div class="admin-grid">
+              <div class="admin-card glass-card">
+                <div class="section-head">
+                  <div>
+                    <h3>Produtos</h3>
+                    <p>Cadastre, edite ou remova produtos do catálogo.</p>
+                  </div>
+                  <button class="btn btn-secondary" id="newProductBtn" type="button">Novo produto</button>
+                </div>
+                <div class="admin-products-list" id="adminProductsList"></div>
+              </div>
+
+              <div class="admin-card glass-card">
+                <h3 id="productFormTitle">Novo produto</h3>
+                <form id="productForm" class="stack-form two-cols">
+                  <input id="productId" type="hidden" />
+                  <label>
+                    Nome
+                    <input id="productName" class="glass-input admin-input" type="text" required />
+                  </label>
+                  <label>
+                    Categoria
+                    <input id="productCategory" class="glass-input admin-input" type="text" required />
+                  </label>
+                  <label>
+                    Seção
+                    <input id="productSection" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Emoji
+                    <input id="productEmoji" class="glass-input admin-input" type="text" maxlength="4" />
+                  </label>
+                  <label>
+                    Armazenamento
+                    <input id="productStorage" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Parcelamento
+                    <input id="productInstallment" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Preço PIX (texto)
+                    <input id="productPixPrice" class="glass-input admin-input" type="text" required />
+                  </label>
+                  <label>
+                    Preço numérico
+                    <input id="productPixValue" class="glass-input admin-input" type="number" min="0" step="0.01" required />
+                  </label>
+                  <label class="full-span">
+                    Tags separadas por vírgula
+                    <input id="productTags" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label class="full-span">
+                    Observações
+                    <textarea id="productNotes" class="glass-input admin-input area-input"></textarea>
+                  </label>
+                </form>
+                <div class="admin-actions">
+                  <button class="btn btn-primary" id="saveProduct" type="button">Salvar produto</button>
+                  <button class="btn btn-secondary" id="clearProductForm" type="button">Limpar</button>
+                </div>
+                <p class="admin-status" id="productStatus"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-tab-content" id="tab-security">
+            <div class="admin-grid single-col">
+              <div class="admin-card glass-card">
+                <h3>Login e senha do administrador</h3>
+                <form id="securityForm" class="stack-form two-cols">
+                  <label>
+                    Novo usuário do admin
+                    <input id="cfgAdminUser" class="glass-input admin-input" type="text" />
+                  </label>
+                  <label>
+                    Nova senha do admin
+                    <input id="cfgAdminPassword" class="glass-input admin-input" type="text" />
+                  </label>
+                </form>
+                <div class="admin-actions">
+                  <button class="btn btn-primary" id="saveSecurity" type="button">Salvar acesso</button>
+                </div>
+                <p class="admin-status" id="securityStatus"></p>
+                <p class="admin-tip">Dica: após publicar no Netlify, as alterações do catálogo e layout passam a sincronizar entre celular e desktop. O acesso do admin também será salvo na nuvem.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <style id="customCssHook"></style>
   </body>
 </html>
